@@ -77,27 +77,65 @@ char button_handler(int row, int col, int row_gpio) {
     return kb_layout[row][col];
 }
 
+void handle_asterisk(char *buf, char *pw, nvs_handle my_handle, enum state_t* state) {
+    if (*state == SET_1) {
+        if (strcmp (buf, pw) == 0) {
+            memset(buf, 0, 16);
+            *state = SET_2;
+        } else {
+            memset(buf, 0, 16);
+            printf("Current password is wrong\n");
+            set_led(26, false); 
+            *state = NORMAL;
+        }
+        return;
+    }
+    memset(buf, 0, 16);
+    printf("Password cleared\n");
+    return;
+}
+
+void handle_hashtag(char *buf, char *pw, nvs_handle my_handle, enum state_t* state) {
+    if (*state == NORMAL && strlen(buf) == 0) {
+        *state = SET_1;
+    } else if (*state == SET_2) {
+        printf("Password changed\n");
+        strcpy(pw, buf);
+        nvs_set_str(my_handle, "password", pw);
+        nvs_commit(my_handle);
+        printf("New password: %s\n", pw);
+        memset(buf, 0, 16);
+        *state = NORMAL;
+    } else {
+        printf("%s\n", buf);
+        if (strcmp(buf, pw) == 0) {
+            printf("Correct password\n");
+            set_led(25, true); set_led(26, false);
+            vTaskDelay(2000 / portTICK_PERIOD_MS);
+            set_led(25, false); set_led(26, true);
+        } else {
+            printf("Wrong password\n");
+            set_led(26, false);
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+            set_led(26, true);
+        }
+        memset(buf, 0, 16);
+    }
+}
+
 void check_char(char c, char *pw, char *buf, nvs_handle my_handle, enum state_t* state) {
     if (c == '\0')
         return;
 
     if (c == '*') {
-        if (*state == SET_1) {
-            if (strcmp (buf, pw) == 0) {
-                memset(buf, 0, 16);
-                *state = SET_2;
-            } else {
-                memset(buf, 0, 16);
-                printf("Wrong password\n");
-                set_led(26, false); 
-                *state = NORMAL;
-            }
-            return;
-        }
-        memset(buf, 0, 16);
-        printf("Password cleared\n");
+        handle_asterisk(buf, pw, my_handle, state);
         return;
     } 
+
+    if (c == '#') {
+        handle_hashtag(buf, pw, my_handle, state);
+        return;
+    }
 
     if(strlen(buf) == 15) {
         printf("Password too long, press (*) to clear\n");
@@ -105,34 +143,6 @@ void check_char(char c, char *pw, char *buf, nvs_handle my_handle, enum state_t*
         return;
     }
 
-    if (c == '#') {
-        if (*state == NORMAL && strlen(buf) == 0) {
-            *state = SET_1;
-        } else if (*state == SET_2) {
-            printf("Password changed\n");
-            strcpy(pw, buf);
-            nvs_set_str(my_handle, "password", pw);
-            nvs_commit(my_handle);
-            printf("New password: %s\n", pw);
-            memset(buf, 0, 16);
-            *state = NORMAL;
-        } else {
-            printf("%s\n", buf);
-            if (strcmp(buf, pw) == 0) {
-                printf("Correct password\n");
-                set_led(25, true); set_led(26, false);
-                vTaskDelay(2000 / portTICK_PERIOD_MS);
-                set_led(25, false); set_led(26, true);
-            } else {
-                printf("Wrong password\n");
-                set_led(26, false);
-                vTaskDelay(500 / portTICK_PERIOD_MS);
-                set_led(26, true);
-            }
-            memset(buf, 0, 16);
-        }
-        return;
-    }
     buf[strlen(buf)] = c;
     printf("%s\n", buf);
 }
