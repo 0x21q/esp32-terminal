@@ -130,8 +130,10 @@ Popis funkcionality tlačítek ve stavu normal:
 
 Při zapojení ESP začne svítit červená LED dioda, která tímto značí, že dosud nebylo zadáno přistupové heslo. Po zadání správného hesla se červená LED dioda zhasne a na 2 sekundy začne svítit zelená LED dioda která značí, že bylo zadáno správné heslo. Při zadání špatného hesla se červená LED dioda zhasne na 0,5 sekundy a následně začne znovu svítit, aby nějak indikovala, že heslo bylo špatné. Další LED indikace je při správném nastvení nového hesla, kdy střídavě probliknou obě LED diody.
 
-Ukázka je ve videu níže.
+Ukázka je ve videu níže. Přikládám raději dva odkazy, kdyby se něco s jedním z uložišť stalo. Také mám zkušenost, že nextcloud v přehrávači co je v prohlížeči někdy neukazuje obraz, ale po stažení je video v pořádku.
 
 #### Video s ukázkou
+
+https://drive.google.com/file/d/1Wp3bLdKPoEcUJZDjBw1MqzSJHiFEy4IS/view?usp=sharing
 
 https://nextcloud.fit.vutbr.cz/s/i2dLHNWJjz5iitg
