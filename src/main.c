@@ -1,4 +1,13 @@
+/**
+ * @file main.c
+ * @brief Main file for the project
+ * @author Jakub Kratochvil (xkrato67)
+*/
+
 #include "../lib/header.h"
+
+// Change this constant to ENABLE/DISABLE debug printing
+#define DEBUG 0
 
 void init_leds() {
     ESP_ERROR_CHECK(gpio_reset_pin(LED_GREEN));
@@ -67,43 +76,43 @@ void handle_asterisk(char *buf, char *pw, nvs_handle my_handle, enum state_t* st
     if (*state == SET_1) {
         if (strcmp (buf, pw) == 0) {
             memset(buf, 0, PW_LEN);
-            printf("Correct password, enter new password\n");
+            if (DEBUG) printf("Current password is correct\n");
             blink_swap_leds(500);
             *state = SET_2;
         } else {
             memset(buf, 0, PW_LEN);
-            printf("Current password is wrong\n");
+            if (DEBUG) printf("Current password is wrong\n");
             blink_led(LED_RED, 500, false);
             *state = NORMAL;
         }
         return;
     }
     memset(buf, 0, PW_LEN);
-    printf("Password cleared\n");
+    if (DEBUG) printf("Password cleared\n");
     return;
 }
 
 void handle_hashtag(char *buf, char *pw, nvs_handle my_handle, enum state_t* state) {
     if (*state == NORMAL && strlen(buf) == 0) {
-        printf("Enter current password\n");
+        if (DEBUG) printf("Enter current password\n");
         *state = SET_1;
     } else if (*state == SET_2) {
         strcpy(pw, buf);
         nvs_set_str(my_handle, "password", pw);
         nvs_commit(my_handle);
-        printf("Password changed to: %s\n", pw);
+        if (DEBUG) printf("Password changed to: %s\n", pw);
         memset(buf, 0, PW_LEN);
         blink_swap_leds(500);
         vTaskDelay(250 / portTICK_PERIOD_MS);
         blink_swap_leds(500);
         *state = NORMAL;
     } else {
-        printf("%s\n", buf);
+        if (DEBUG) printf("%s\n", buf);
         if (strcmp(buf, pw) == 0) {
-            printf("Correct password\n");
+            if (DEBUG) printf("Correct password\n");
             blink_swap_leds(3500);
         } else {
-            printf("Wrong password\n");
+            if (DEBUG) printf("Wrong password\n");
             blink_led(LED_RED, 500, false);
         }
         memset(buf, 0, PW_LEN);
@@ -125,13 +134,15 @@ void check_char(char c, char *pw, char *buf, nvs_handle my_handle, enum state_t*
     }
 
     if (strlen(buf) == PW_LEN - 1) {
-        printf("Password too long, press (*) to clear\n");
-        printf("%s\n", buf);
+        if (DEBUG) {
+            printf("Password too long, press (*) to clear\n");
+            printf("%s\n", buf);
+        }
         return;
     }
 
     buf[strlen(buf)] = c;
-    printf("%s\n", buf);
+    if (DEBUG) printf("%s\n", buf);
 }
 
 void terminal_task(void *pvParameter) {
@@ -142,9 +153,9 @@ void terminal_task(void *pvParameter) {
     size_t len = PW_LEN;
     esp_err_t err = nvs_get_str(my_handle, "password", pw, &len);
     if (err == ESP_OK) {
-        printf("Password found in memory: %s\n", pw);
+        if (DEBUG) printf("Password found in memory: %s\n", pw);
     } else {
-        printf("Password not found\n");
+        if (DEBUG) printf("Password not found\n");
         char default_pw[] = "1234";
         nvs_set_str(my_handle, "password", default_pw);
         nvs_commit(my_handle);

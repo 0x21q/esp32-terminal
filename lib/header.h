@@ -1,3 +1,9 @@
+/**
+ * @file header.h
+ * @brief Header file for the project
+ * @author Jakub Kratochvil (xkrato67)
+*/
+
 #include <stdio.h>
 #include <string.h>
 
